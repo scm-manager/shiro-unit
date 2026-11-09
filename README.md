@@ -65,6 +65,9 @@ inside an already active `Subject.execute` scope: on Java 25, scoped subjects ta
 precedence over thread bindings. For work on another thread, submit the task
 returned by `subject.associateWith(task)`; the caller's subject is not inherited.
 
-Build with Maven 3.6.3 or newer. Run the tests with `mvn test`. To verify and install a local snapshot without
-release signing, run `mvn install -Dgpg.skip=true`. The snapshot version shown
-above is for local development; use the published 2.x version once released.
+The Maven Wrapper downloads Maven 3.9.12 on first use; a separate Maven installation
+is not required. Run the tests with `./mvnw test` (`.\mvnw.cmd test` on Windows).
+To verify and install a local snapshot without release signing, run
+`./mvnw install -Dgpg.skip=true`. An installed Maven 3.6.3 or newer can also be used.
+The snapshot version shown above is for local development; use the published 2.x
+version once released.
