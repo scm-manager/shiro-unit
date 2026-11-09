@@ -31,11 +31,11 @@ package com.github.sdorra.shiro;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.ini.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.Factory;
-import org.apache.shiro.util.LifecycleUtils;
+import org.apache.shiro.lang.util.Factory;
+import org.apache.shiro.lang.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 
 import org.junit.rules.MethodRule;
@@ -61,8 +61,6 @@ public class ShiroRule implements MethodRule
   public Statement apply(final Statement base, FrameworkMethod method,
     Object target)
   {
-    tearDownShiro(); // clean up whatever other tests might have left behind
-
     final SubjectAwareDescriptor desc = new SubjectAwareDescriptor();
     SubjectAware subjectAware = SubjectAwares.find(target);
 
@@ -84,13 +82,15 @@ public class ShiroRule implements MethodRule
       @Override
       public void evaluate() throws Throwable
       {
-        if (desc.isMerged())
-        {
-          initializeSecurityManager(desc);
-        }
-
         try
         {
+          tearDownShiro(); // clean up whatever other tests might have left behind
+
+          if (desc.isMerged())
+          {
+            initializeSecurityManager(desc);
+          }
+
           base.evaluate();
         }
         finally
@@ -132,6 +132,7 @@ public class ShiroRule implements MethodRule
       SecurityManager securityManager = factory.getInstance();
 
       SecurityUtils.setSecurityManager(securityManager);
+      ThreadContext.bind(securityManager);
     }
 
     String username = subjectAware.getUsername();
@@ -165,10 +166,10 @@ public class ShiroRule implements MethodRule
       // need a SecurityManager instance because it was using only mock Subject instances)
     }
 
-    ThreadContext.unbindSecurityManager();
-    ThreadContext.unbindSubject();
-    ThreadContext.remove();
-
-    SecurityUtils.setSecurityManager(null);
+    finally
+    {
+      ThreadContext.remove();
+      SecurityUtils.setSecurityManager(null);
+    }
   }
 }

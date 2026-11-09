@@ -47,6 +47,24 @@ Artifacts are deployed to [Maven Central](http://search.maven.org). To use, drop
 <dependency>
   <groupId>com.github.sdorra</groupId>
   <artifactId>shiro-unit</artifactId>
-  <version>1.0.0</version>
+  <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
+
+## Shiro compatibility
+
+The 2.x line targets Apache Shiro 3 and requires Java 17 or newer. The public
+`com.github.sdorra.shiro.ShiroRule` and `SubjectAware` APIs are unchanged: existing
+test imports, class/method annotation merging, custom annotations and
+`setSubject(Subject)` calls continue to work. Use shiro-unit 1.x for Shiro 1.
+
+The rule initializes and tears down Shiro on the thread evaluating the test,
+including cleanup after authentication or test failures. It uses thread bindings
+so tests may still replace their subject with `setSubject`. Do not place the rule
+inside an already active `Subject.execute` scope: on Java 25, scoped subjects take
+precedence over thread bindings. For work on another thread, submit the task
+returned by `subject.associateWith(task)`; the caller's subject is not inherited.
+
+Build with Maven 3.6.3 or newer. Run the tests with `mvn test`. To verify and install a local snapshot without
+release signing, run `mvn install -Dgpg.skip=true`. The snapshot version shown
+above is for local development; use the published 2.x version once released.
